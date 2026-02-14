@@ -12,4 +12,3 @@ class Config:
     MYSQL_USER = os.environ.get("MYSQLUSER")
     MYSQL_PASSWORD = os.environ.get("MYSQLPASSWORD")
     MYSQL_DATABASE = os.environ.get("MYSQLDATABASE")
-
