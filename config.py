@@ -1,14 +1,7 @@
-"""Flask, MySQL and Mail configuration."""
-import os
-from dotenv import load_dotenv
 
-load_dotenv()
+import os
 
 class Config:
     SECRET_KEY = os.environ.get("SECRET_KEY", "supersecret")
 
-    MYSQL_HOST = os.environ.get("MYSQLHOST")
-    MYSQL_PORT = int(os.environ.get("MYSQLPORT", 3306))
-    MYSQL_USER = os.environ.get("MYSQLUSER")
-    MYSQL_PASSWORD = os.environ.get("MYSQLPASSWORD")
-    MYSQL_DATABASE = os.environ.get("MYSQLDATABASE")
+    DATABASE_URL = os.environ.get("DATABASE_URL")

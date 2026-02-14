@@ -1,8 +1,10 @@
 """India Tour - Flask app with MySQL, bookings and email."""
 import os
+import psycopg2
+import psycopg2.extras
+from psycopg2 import errors
 import json
 from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
-import pymysql
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from config import Config
@@ -89,15 +91,16 @@ except Exception:
 
 
 def get_db():
-    """Return a MySQL connection."""
-    return pymysql.connect(
-        host=app.config['MYSQL_HOST'],
-        port=app.config['MYSQL_PORT'],
-        user=app.config['MYSQL_USER'],
-        password=app.config['MYSQL_PASSWORD'],
-        database=app.config['MYSQL_DATABASE'],
-        cursorclass=pymysql.cursors.DictCursor,
+    database_url = os.environ.get("DATABASE_URL")
+
+    if database_url.startswith("postgres://"):
+        database_url = database_url.replace("postgres://", "postgresql://", 1)
+
+    return psycopg2.connect(
+        database_url,
+        cursor_factory=psycopg2.extras.RealDictCursor
     )
+
 
 def init_db():
     """Create users and bookings tables; optional demo user."""
@@ -106,11 +109,15 @@ def init_db():
         with conn.cursor() as cur:
             cur.execute("""
                 CREATE TABLE IF NOT EXISTS users (
-                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    id SERIAL PRIMARY KEY,
                     email VARCHAR(255) NOT NULL UNIQUE,
                     password_hash VARCHAR(255) NOT NULL,
                     full_name VARCHAR(255) DEFAULT NULL,
                     phone VARCHAR(50) DEFAULT NULL,
+                    dob DATE,
+                    gender VARCHAR(20),
+                    city VARCHAR(100),
+                    country VARCHAR(100),
                     role VARCHAR(20) DEFAULT 'user',
                     assigned_destination VARCHAR(100) DEFAULT NULL,
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -119,7 +126,7 @@ def init_db():
 
             cur.execute("""
                 CREATE TABLE IF NOT EXISTS bookings (
-                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    id SERIAL PRIMARY KEY,
                     user_id INT NULL,
                     guide_id INT NULL,
                     name VARCHAR(255) NOT NULL,
@@ -139,7 +146,7 @@ def init_db():
 
             cur.execute("""
                 CREATE TABLE IF NOT EXISTS newsletter_subscribers (
-                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    id SERIAL PRIMARY KEY,
                     email VARCHAR(255) NOT NULL UNIQUE,
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )
@@ -185,7 +192,7 @@ def user_register(email, password, role='user', full_name=None, phone=None):
             )
         conn.commit()
         return True, None
-    except pymysql.IntegrityError:
+    except psycopg2.errors.UniqueViolation:
         return False, "Email already registered."
     except Exception as e:
         return False, str(e)
@@ -212,10 +219,11 @@ def index():
 
 @app.route('/newsletter', methods=['POST'])
 def newsletter_subscribe():
-    """Save newsletter email to DB and return JSON (no page reload)."""
     email = request.form.get('email', '').strip().lower()
+
     if not email:
         return jsonify({'success': False, 'message': 'Please enter your email address.'}), 400
+
     conn = get_db()
     try:
         with conn.cursor() as cur:
@@ -224,11 +232,16 @@ def newsletter_subscribe():
                 (email,)
             )
         conn.commit()
-        return jsonify({'success': True, 'message': 'Thank you! You are subscribed to our newsletter.'}), 200
-    except pymysql.IntegrityError:
+        return jsonify({'success': True, 'message': 'Thank you! You are subscribed.'}), 200
+
+    except psycopg2.errors.UniqueViolation:
+        conn.rollback()
         return jsonify({'success': False, 'message': 'This email is already subscribed.'}), 409
-    except Exception as e:
-        return jsonify({'success': False, 'message': 'Something went wrong. Please try again.'}), 500
+
+    except Exception:
+        conn.rollback()
+        return jsonify({'success': False, 'message': 'Something went wrong.'}), 500
+
     finally:
         conn.close()
 
