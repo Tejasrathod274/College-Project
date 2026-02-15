@@ -46,78 +46,35 @@ function validatePhone() {
 }
 
 
-// Profile page specific scripts
-document.addEventListener('DOMContentLoaded', function() {
-  // Handle menu button clicks
-  const menuButtons = document.querySelectorAll('.menu-btn');
+/**
+ * Profile Page Tab Navigation
+ */
+function initProfileTabs() {
+  const menuButtons = document.querySelectorAll('.menu-btn[data-tab]');
+  
   menuButtons.forEach(button => {
     button.addEventListener('click', function() {
-      // Remove active class from all buttons
+      // Skip if it's a logout button
+      if (this.classList.contains('logout') || this.classList.contains('logout-trigger')) {
+        return;
+      }
+      
+      // Remove active class from all buttons and cards
       menuButtons.forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
+      
       // Add active class to clicked button
       this.classList.add('active');
       
-      // Find corresponding card and show it
-      const cardId = this.getAttribute('data-card') || this.getAttribute('data-tab');
-      if (cardId) {
-        const cards = document.querySelectorAll('.card');
-        cards.forEach(card => card.classList.remove('active'));
-        const targetCard = document.getElementById(cardId);
-        if (targetCard) {
-          targetCard.classList.add('active');
-        }
+      // Show corresponding card
+      const tabId = this.getAttribute('data-tab');
+      const targetCard = document.getElementById(tabId);
+      if (targetCard) {
+        targetCard.classList.add('active');
       }
     });
   });
-  
-  // Close flash messages
-  const flashCloseButtons = document.querySelectorAll('.flash-close');
-  flashCloseButtons.forEach(button => {
-    button.addEventListener('click', function() {
-      this.parentElement.style.display = 'none';
-    });
-  });
-});
-
-// Handle user logout with confirmation (green success bar)
-function handleUserLogout() {
-  if (typeof showLogoutConfirm === 'function') {
-    showLogoutConfirm((confirmed) => {
-      if (confirmed) {
-        showSuccessBar('Logging out...', 1500, { 
-          color: 'green', 
-          size: 'small',
-          icon: 'fa-sign-out-alt'
-        });
-        setTimeout(() => {
-          window.location.href = '/logout';
-        }, 1500);
-      }
-    });
-  } else {
-    // Fallback to confirm dialog if showLogoutConfirm is not available
-    if (confirm('Logout from IndiaTour?')) {
-      window.location.href = '/logout';
-    }
-  }
 }
 
-// Set up logout button handlers
-document.addEventListener('DOMContentLoaded', function() {
-  const logoutBtn = document.getElementById('logoutBtn');
-  const logoutBtnMobile = document.getElementById('logoutBtnMobile');
-  
-  if (logoutBtn) {
-    logoutBtn.addEventListener('click', function(e) {
-      e.preventDefault();
-      handleUserLogout();
-    });
-  }
-  
-  if (logoutBtnMobile) {
-    logoutBtnMobile.addEventListener('click', function(e) {
-      e.preventDefault();
-      handleUserLogout();
-    });
-  }
-});
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', initProfileTabs);

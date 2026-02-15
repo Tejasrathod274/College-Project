@@ -1,110 +1,176 @@
-<!doctype html>
-<html lang="en">
+{% extends "base.html" %}
 
-<head>
-  <meta charset="UTF-8">
-  <title>Guide Profile | Travel India</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+{% block title %}Guide Profile | Travel India{% endblock %}
 
-  <!-- Font & Icons -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/common.css') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/guide-profile.css') }}">
-  <script src="{{ url_for('static', filename='js/common.js') }}" defer></script>
-  <script src="{{ url_for('static', filename='js/guide-profile.js') }}" defer></script>
-</head>
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/guide-profile.css') }}">
+{% endblock %}
 
-<body>
+{% block body_class %}{% endblock %}
 
-  <!-- SIDEBAR -->
-  <aside class="sidebar">
+{% block navbar %}
+<!-- Guide profile uses sidebar instead of navbar -->
+{% endblock %}
+
+{% block footer %}
+<!-- Guide profile doesn't use footer -->
+{% endblock %}
+
+{% block content %}
+<!-- SIDEBAR -->
+<aside class="sidebar">
     <div class="logo">Travel<span>India</span></div>
 
     <div class="menu">
-      <button class="menu-btn active" data-tab="personal">
-        <i class="fa fa-user"></i> Personal Info
-      </button>
-      <button class="menu-btn" data-tab="support">
-        <i class="fa fa-life-ring"></i> Help & Support
-      </button>
+        <button class="menu-btn active" data-tab="personal">
+            <i class="fa fa-user"></i> Personal Info
+        </button>
+        <button class="menu-btn" data-tab="bookings">
+            <i class="fa fa-ticket"></i> My Bookings
+        </button>
+        <button class="menu-btn" data-tab="support">
+            <i class="fa fa-life-ring"></i> Help & Support
+        </button>
     </div>
-    <button class="menu-btn logout" id="logoutBtn">
-      <i class="fa fa-sign-out-alt"></i> Logout
+    <button class="menu-btn logout desktop-logout logout-trigger" data-logout="/guide/logout">
+        <i class="fa fa-sign-out-alt"></i> Logout
     </button>
-  </aside>
+</aside>
 
-  <!-- MAIN CONTENT -->
-  <main class="main">
-
-    <!-- FLASH MESSAGES -->
-    {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-    {% for category, msg in messages %}
-    <div class="flash-message {{ category }}">
-      <i class="fa {{ 'fa-check-circle' if category == 'success' else 'fa-exclamation-circle' }}"></i>
-      {{ msg }}
-      <button class="flash-close" onclick="this.parentElement.style.display='none';">&times;</button>
-    </div>
-    {% endfor %}
-    {% endif %}
-    {% endwith %}
-
+<!-- MAIN CONTENT -->
+<main class="main">
     <!-- PERSONAL INFO -->
     <section class="card {% if active_tab == 'personal' %}active{% endif %}" id="personal">
-      <div class="card-header">
-        <i class="fa fa-user"></i> Personal Information
-      </div>
-      <div class="card-body">
-        <form method="POST" class="profile-form">
-          <div class="info-grid">
-            <div class="form-group">
-              <label>Full Name</label>
-              <input type="text" name="full_name" placeholder="Enter your full name" value="{{ guide.full_name or '' }}">
+        <div class="card-header">
+            <i class="fa fa-user"></i> Personal Information
+        </div>
+        <div class="card-body">
+            <form method="POST" class="profile-form">
+                <div class="info-grid">
+                    <div class="form-group">
+                        <label>Full Name</label>
+                        <input type="text" name="full_name" placeholder="Enter your full name" value="{{ guide.full_name or '' }}">
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" value="{{ guide.email }}" disabled class="disabled-input">
+                        <small>Email cannot be changed</small>
+                    </div>
+                    <div class="form-group">
+                        <label>Phone</label>
+                        <input type="tel" id="phoneInput" name="phone" maxlength="10" inputmode="numeric" placeholder="Enter your phone number" value="{{ guide.phone or '' }}">
+                        <span class="phone-error" id="phoneError"></span>
+                    </div>
+                    <div class="form-group">
+                        <label>Assigned Destination</label>
+                        <input type="text" value="{{ guide.assigned_destination or 'Not assigned' }}" disabled class="disabled-input">
+                        <small>Destination cannot be changed</small>
+                    </div>
+                </div>
+                <button type="submit" class="btn-save">Save Changes</button>
+            </form>
+        </div>
+    </section>
+
+    <!-- BOOKINGS -->
+    <section class="card {% if active_tab == 'bookings' %}active{% endif %}" id="bookings">
+        <div class="card-header">
+            <i class="fa fa-ticket"></i> My Bookings
+        </div>
+        <div class="card-body">
+            {% if bookings %}
+                {% for b in bookings %}
+                <div class="booking-card">
+                    <div class="booking-header">
+                        <div>
+                            <h4><i class="fas fa-map-location-dot"></i>{{ b.tour_name }}</h4>
+                            <p class="destination-name">{{ b.destination }}</p>
+                        </div>
+                        <div class="booking-price-status">
+                            <div class="price">{{ b.tour_price }}</div>
+                            {% if b.status == 'Confirmed' %}
+                            <span class="status-badge confirmed">Confirmed</span>
+                            {% else %}
+                            <span class="status-badge pending">Pending</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="booking-details">
+                        <div class="detail-item">
+                            <label><i class="fas fa-calendar"></i>Travel Date</label>
+                            <p>{{ b.preferred_date }}</p>
+                        </div>
+                        <div class="detail-item">
+                            <label><i class="fas fa-users"></i>Travelers</label>
+                            <p>{{ b.persons }} person{% if b.persons != 1 %}s{% endif %}</p>
+                        </div>
+                        <div class="detail-item">
+                            <label><i class="fas fa-envelope"></i>Email</label>
+                            <p>{{ b.email }}</p>
+                        </div>
+                        <div class="detail-item">
+                            <label><i class="fas fa-phone"></i>Phone</label>
+                            <p>{{ b.phone }}</p>
+                        </div>
+                    </div>
+                    
+                    {% if b.tour_description %}
+                    <div class="tour-description">
+                        {% for line in b.tour_description.split('\n') %}
+                            {% if line.strip() %}
+                            <p>{{ line }}</p>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    
+                    {% if b.message %}
+                    <div class="booking-message">
+                        <label><i class="fas fa-sticky-note"></i>Customer Message</label>
+                        <p>{{ b.message }}</p>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="booking-footer">
+                        <p>Booked on: {{ b.created_at.strftime('%B %d, %Y') if b.created_at else 'N/A' }}</p>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+            <div class="no-bookings">
+                <i class="fas fa-inbox"></i>
+                <p>No bookings yet.</p>
             </div>
-            <div class="form-group">
-              <label>Email</label>
-              <input type="email" value="{{ guide.email }}" disabled class="disabled-input">
-              <small>Email cannot be changed</small>
-            </div>
-            <div class="form-group">
-              <label>Phone</label>
-              <input type="tel" id="phoneInput" name="phone" maxlength="10" inputmode="numeric" placeholder="Enter your phone number" value="{{ guide.phone or '' }}">
-              <span class="phone-error" id="phoneError"></span>
-            </div>
-            <div class="form-group">
-              <label>Assigned Destination</label>
-              <input type="text" value="{{ guide.assigned_destination }}" disabled class="disabled-input">
-              <small>Destination is assigned by admin</small>
-            </div>
-          </div>
-          <button type="submit" class="btn-save">Save Changes</button>
-        </form>
-      </div>
+            {% endif %}
+        </div>
     </section>
 
     <!-- SUPPORT -->
     <section class="card {% if active_tab == 'support' %}active{% endif %}" id="support">
-      <div class="card-header">
-        <i class="fa fa-life-ring"></i> Help & Support
-      </div>
-      <div class="card-body">
-        <div class="support-item">
-          <i class="fa fa-envelope"></i> support@travelindia.com
+        <div class="card-header">
+            <i class="fa fa-life-ring"></i> Help & Support
         </div>
-        <div class="support-item">
-          <i class="fa fa-phone"></i> +91 98765 43210
+        <div class="card-body">
+            <div class="support-item">
+                <i class="fa fa-envelope"></i> support@travelindia.com
+            </div>
+            <div class="support-item">
+                <i class="fa fa-phone"></i> +91 98765 43210
+            </div>
+            <div class="support-item">
+                <i class="fa fa-clock"></i> Mon–Fri, 9AM–6PM IST
+            </div>
         </div>
-        <div class="support-item">
-          <i class="fa fa-clock"></i> Mon–Fri, 9AM–6PM IST
-        </div>
-      </div>
     </section>
-     <a href="{{ url_for('guide_dashboard') }}" class="back-home">
-  ⬅ Back
-</a>
+    
+    <a href="{{ url_for('guide_dashboard') }}" class="back-home">⬅ Back to Dashboard</a>
+    <button class="mobile-logout logout-trigger" data-logout="/guide/logout">
+        <i class="fa fa-sign-out-alt"></i> Logout
+    </button>
+</main>
+{% endblock %}
 
-  </main>
-</body>
-
-</html>
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/guide-profile.js') }}"></script>
+{% endblock %}

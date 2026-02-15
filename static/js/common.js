@@ -1,7 +1,12 @@
+/**
+ * Common JavaScript Functions
+ * Shared across all pages
+ */
+
 // Dropdown toggle function
 function toggleDropdown() {
-  var dd = document.getElementById("profileDropdown") || document.getElementById("profileDropdown");
-  var ddNav = document.getElementById("dropdown-nav") || document.querySelector('.dropdown-nav');
+  const dd = document.getElementById("profileDropdown");
+  const ddNav = document.querySelector('.dropdown-nav');
   
   if (ddNav) {
     ddNav.classList.toggle("show");
@@ -42,83 +47,109 @@ function showToast(message, type = 'success') {
 
 // Close dropdown when clicking outside
 document.addEventListener('click', function(e) {
-  if (!e.target.closest('.user-profile') && !e.target.closest('.user-profile-nav')) {
-    var dd = document.getElementById("profileDropdown");
-    var ddNav = document.querySelector('.dropdown-nav');
+  if (!e.target.closest('.user-profile') && !e.target.closest('.user-profile-nav') && !e.target.closest('[data-dropdown-toggle]')) {
+    const dd = document.getElementById("profileDropdown");
+    const ddNav = document.querySelector('.dropdown-nav');
     if (dd) dd.classList.remove("show");
     if (ddNav) ddNav.classList.remove("show");
   }
 });
 
-// Toggle menu for mobile
-function toggleMenu() {
-  document.querySelector(".nav-links").classList.toggle("active");
+// Toggle menu for mobile - using event delegation
+function initMenuToggle() {
+  const menuToggles = document.querySelectorAll('[data-menu-toggle], .menu-toggle');
+  menuToggles.forEach(toggle => {
+    toggle.addEventListener('click', function() {
+      const navLinks = document.querySelector(".nav-links");
+      if (navLinks) {
+        navLinks.classList.toggle("active");
+      }
+    });
+  });
 }
 
-// Navbar: fetch current user and show uploaded avatar in nav profile icon
+// Initialize dropdown toggles
+function initDropdownToggles() {
+  const dropdownToggles = document.querySelectorAll('[data-dropdown-toggle]');
+  dropdownToggles.forEach(toggle => {
+    toggle.addEventListener('click', function(e) {
+      e.stopPropagation();
+      toggleDropdown();
+    });
+  });
+}
+
+// Navbar: fetch current user and show profile
 function updateNavAuth() {
-  var navLogin = document.getElementById('navLogin');
-  var mobileNavLogin = document.getElementById('mobileNavLogin');
-  var userProfile = document.getElementById('userProfile');
+  const navLogin = document.getElementById('navLogin');
+  const mobileNavLogin = document.getElementById('mobileNavLogin');
+  const userProfile = document.getElementById('userProfile');
   
-  // Set initial visibility to show login by default
+  // Set initial visibility
   if (navLogin) navLogin.style.display = 'inline-block';
   if (mobileNavLogin) mobileNavLogin.style.display = 'block';
   if (userProfile) userProfile.style.display = 'none';
   
-  fetch('/api/current_user', { credentials: 'same-origin' }).then(function(res){
-    return res.json();
-  }).then(function(data){
-    if (!data || !data.logged_in) {
-      // NOT LOGGED IN - show login buttons
-      if (navLogin) navLogin.style.display = 'inline-block';
-      if (mobileNavLogin) mobileNavLogin.style.display = 'block';
-      if (userProfile) userProfile.style.display = 'none';
-      return;
-    }
-    
-    // LOGGED IN - show profile icon and hide login buttons
-    if (navLogin) navLogin.style.display = 'none';
-    if (mobileNavLogin) mobileNavLogin.style.display = 'none';
-    if (userProfile) {
-      userProfile.style.display = 'block';
-      
-      // Update avatar if uploaded
-      if (data.avatar) {
-        var existingImg = userProfile.querySelector('img');
-        if (!existingImg) {
-          var avatarHtml = '<img src="'+data.avatar+'" alt="profile" class="nav-avatar">';
-          var dropdownHtml = '<div class="dropdown" id="profileDropdown"><a href="/profile">My Account</a><a href="/logout" id="logoutBtn">Logout</a></div>';
-          userProfile.innerHTML = avatarHtml + dropdownHtml;
-        }
+  fetch('/api/current_user', { credentials: 'same-origin' })
+    .then(res => res.json())
+    .then(data => {
+      if (!data || !data.logged_in) {
+        // NOT LOGGED IN
+        if (navLogin) navLogin.style.display = 'inline-block';
+        if (mobileNavLogin) mobileNavLogin.style.display = 'block';
+        if (userProfile) userProfile.style.display = 'none';
+        return;
       }
       
-      // Attach logout handler
-      var lb = document.getElementById('logoutBtn');
-      if (lb) lb.onclick = function(e){ 
-        e.preventDefault();
-        if (typeof showSuccessBar === 'function') {
-          showSuccessBar('Logging out...', 2000);
-        } else {
-          showToast('Logging out...', 'success');
+      // LOGGED IN
+      if (navLogin) navLogin.style.display = 'none';
+      if (mobileNavLogin) mobileNavLogin.style.display = 'none';
+      if (userProfile) {
+        userProfile.style.display = 'block';
+        
+        // Update avatar if uploaded
+        if (data.avatar) {
+          const existingImg = userProfile.querySelector('img');
+          if (!existingImg) {
+            const avatarHtml = '<img src="'+data.avatar+'" alt="profile" class="nav-avatar">';
+            const dropdownHtml = '<div class="dropdown" id="profileDropdown"><a href="/profile">My Account</a><a href="#" class="logout-trigger">Logout</a></div>';
+            userProfile.innerHTML = avatarHtml + dropdownHtml;
+          }
         }
-        setTimeout(() => {
-          window.location.href = '/logout';
-        }, 500);
-      };
-    }
-  }).catch(function(err){
-    console.log('Auth check failed:', err);
-    if (navLogin) navLogin.style.display = 'inline-block';
-    if (userProfile) userProfile.style.display = 'none';
+      }
+    })
+    .catch(err => {
+      console.error('Auth check failed:', err);
+      if (navLogin) navLogin.style.display = 'inline-block';
+      if (userProfile) userProfile.style.display = 'none';
+    });
+}
+
+// Flash message close handlers
+function initFlashMessages() {
+  const closeButtons = document.querySelectorAll('[data-dismiss="flash"]');
+  closeButtons.forEach(btn => {
+    btn.addEventListener('click', function() {
+      const flashMsg = this.closest('.flash-message');
+      if (flashMsg) {
+        flashMsg.style.opacity = '0';
+        setTimeout(() => flashMsg.remove(), 300);
+      }
+    });
   });
+}
+
+// Initialize all common functionality
+function initCommon() {
+  updateNavAuth();
+  initMenuToggle();
+  initDropdownToggles();
+  initFlashMessages();
 }
 
 // Run on page load
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', function() {
-    updateNavAuth();
-  });
+  document.addEventListener('DOMContentLoaded', initCommon);
 } else {
-  updateNavAuth();
+  initCommon();
 }

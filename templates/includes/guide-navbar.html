@@ -1,0 +1,12 @@
+<nav class="navbar">
+    <div class="logo">Travel<span>India</span></div>
+    <div class="nav-right">
+        <div class="user-profile" data-dropdown-toggle>
+            <i class="fas fa-user-circle"></i>
+            <div class="dropdown" id="profileDropdown">
+                <a href="{{ url_for('guide_profile') }}">My Account</a>
+                <a href="#" class="logout-trigger" data-logout="/guide/logout">Logout</a>
+            </div>
+        </div>
+    </div>
+</nav>

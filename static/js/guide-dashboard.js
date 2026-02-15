@@ -1,24 +1,16 @@
-// Guide dashboard page specific scripts
-function toggleGuideUserDropdown(event) {
-  event.stopPropagation();
-  const dropdown = document.querySelector('.guide-dropdown-menu');
-  if (dropdown) {
-    dropdown.classList.toggle('show');
-  }
+/**
+ * Guide Dashboard Scripts
+ */
+
+// Initialize guide dashboard
+function initGuideDashboard() {
+  // Any guide-specific initialization can go here
+  console.log('Guide dashboard initialized');
 }
 
-// Close dropdown when clicking outside
-document.addEventListener('click', function(e) {
-  if (!e.target.closest('.guide-user-dropdown')) {
-    const dropdown = document.querySelector('.guide-dropdown-menu');
-    if (dropdown) {
-      dropdown.classList.remove('show');
-    }
-  }
-});
-
+// Run on page load
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', function() {
-    // Initialize any guide dashboard specific functionality
-  });
+  document.addEventListener('DOMContentLoaded', initGuideDashboard);
+} else {
+  initGuideDashboard();
 }

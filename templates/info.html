@@ -1,325 +1,225 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Travel India | Information</title>
+{% extends "base.html" %}
 
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+{% block title %}Information | Travel India{% endblock %}
 
-<style>
-*{
-  margin:0;
-  padding:0;
-  box-sizing:border-box;
-  font-family:'Inter',sans-serif;
-}
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/info.css') }}">
+{% endblock %}
 
-body{
-  display:flex;
-  min-height:100vh;
-  background:#0f172a;
-  overflow-x:hidden;
-}
+{% block navbar %}
+<!-- Info page has custom sidebar navigation -->
+{% endblock %}
 
-/* ================= SIDEBAR ================= */
-.sidebar{
-  width:260px;
-  background:linear-gradient(180deg,#1e293b,#0f172a);
-  padding:35px 10px;
-  color:#fff;
-  transition:0.3s ease;
-}
+{% block footer %}
+<!-- Info page doesn't use footer -->
+{% endblock %}
 
-.sidebar h2{
-  font-size:24px;
-  margin-bottom:40px;
-  text-align:center;       /* center text */
-  font-weight:700;
-  letter-spacing:1px;
-}
-
-.sidebar h2 span{
-  color:#facc15;
-}
-
-.sidebar a{
-  display:block;
-  padding:12px 15px;
-  border-radius:12px;
-  margin-bottom:12px;
-  text-decoration:none;
-  color:#cbd5e1;
-  transition:0.3s;
-  position:relative;
-  font-weight:500;
-}
-
-.sidebar a:hover{
-  background:#1e293b;
-  color:#fff;
-}
-
-.sidebar a.active{
-  background:rgba(250,204,21,0.15);
-  color:#facc15;
-  font-weight:600;
-}
-
-.sidebar a.active::before{
-  content:"";
-  position:absolute;
-  left:-20px;
-  top:0;
-  height:100%;
-  width:4px;
-  background:#facc15;
-  border-radius:4px;
-}
-
-/* ================= HAMBURGER ================= */
-.menu-toggle{
-  display:none;
-  position:fixed;
-  top:28px;
-  left:15px;
-  font-size:22px;
-  color:#fff;
-  background:#1e293b;
-  padding:10px 12px;
-  border-radius:8px;
-  cursor:pointer;
-  z-index:1000;
-}
-
-/* ================= MAIN ================= */
-.main{
-  flex:1;
-  padding:60px;
-  display:flex;
-  justify-content:center;
-  align-items:flex-start;
-}
-
-/* ================= CARD ================= */
-.card{
-  background:#ffffff;
-  border-radius:20px;
-  padding:50px;
-  box-shadow:0 25px 60px rgba(0,0,0,0.25);
-  width:100%;
-  max-width:900px;
-  animation:fadeIn 0.4s ease;
-}
-
-.card h1{
-  font-size:28px;
-  margin-bottom:20px;
-  color:#0f172a;
-}
-
-.card p{
-  color:#334155;
-  line-height:1.8;
-  margin-bottom:15px;
-}
-
-.card ul{
-  margin-left:20px;
-  margin-bottom:20px;
-}
-
-.card li{
-  margin-bottom:8px;
-  color:#334155;
-}
-
-/* Sections */
-.content-section{
-  display:none;
-}
-
-.content-section.active{
-  display:block;
-}
-
-/* FAQ */
-.faq-item{
-  background:#f8fafc;
-  padding:15px;
-  border-radius:10px;
-  margin-bottom:12px;
-}
-
-.faq-item strong{
-  display:block;
-  margin-bottom:6px;
-  color:#0f172a;
-}
-
-/* Back Button */
-.back-btn{
-  display:inline-flex;
-  align-items:center;
-  gap:8px;
-  margin-top:30px;
-  padding:12px 22px;
-  border-radius:50px;
-  border:2px solid #facc15;
-  color:#facc15;
-  text-decoration:none;
-  font-weight:600;
-  transition:0.3s;
-}
-
-.back-btn:hover{
-  background:#facc15;
-  color:#0f172a;
-  box-shadow:0 8px 20px rgba(250,204,21,0.4);
-  transform:translateY(-2px);
-}
-
-/* ================= RESPONSIVE ================= */
-@media(max-width:900px){
-  .main{
-    padding:30px;
-  }
-}
-
-@media(max-width:768px){
-
-  body{
-    flex-direction:column;
-  }
-
-  .sidebar{
-    position:fixed;
-    left:-260px;
-    top:0;
-    height:100%;
-    z-index:999;
-  }
-
-  .sidebar.show{
-    left:0;
-  }
-
-  .menu-toggle{
-    display:block;
-  }
-
-  .main{
-    padding:80px 20px 20px 20px;
-  }
-
-  .card{
-    padding:25px;
-  }
-}
-
-@keyframes fadeIn{
-  from{opacity:0; transform:translateY(10px);}
-  to{opacity:1; transform:translateY(0);}
-}
-</style>
-</head>
-<body>
-
-<div class="menu-toggle" onclick="toggleMenu()">
-  <i class="fa fa-bars"></i>
+{% block content %}
+<div class="menu-toggle" data-menu-toggle>
+    <i class="fa fa-bars"></i>
 </div>
 
-<!-- SIDEBAR -->
-<div class="sidebar" id="sidebar">
-  <h2>Travel<span>India</span></h2>
-
-  <a href="#" class="active" onclick="showSection(event,'about')">About Us</a>
-  <a href="#" onclick="showSection(event,'services')">Services</a>
-  <a href="#" onclick="showSection(event,'privacy')">Privacy Policy</a>
-  <a href="#" onclick="showSection(event,'faq')">FAQ</a>
-  <a href="#" onclick="showSection(event,'contact')">Contact</a>
+<div class="sidebar">
+    <h2>Travel<span>India</span></h2>
+    
+    <a href="#about" class="nav-link active" data-section="about">About Us</a>
+    <a href="#services" class="nav-link" data-section="services">Services</a>
+    <a href="#privacy" class="nav-link" data-section="privacy">Privacy Policy</a>
+    <a href="#faq" class="nav-link" data-section="faq">FAQ</a>
+    <a href="#contact" class="nav-link" data-section="contact">Contact</a>
 </div>
 
-<!-- MAIN -->
 <div class="main">
-  <div class="card">
+    <div class="content-wrapper">
+        <!-- ABOUT US -->
+        <section id="about" class="content-section active">
+            <h1>About TravelIndia</h1>
+            <p>TravelIndia is your trusted companion for exploring the incredible diversity and beauty of India. We are dedicated to making travel planning simple, affordable, and memorable.</p>
+            
+            <h3>Our Mission</h3>
+            <p>Our mission is to help travelers discover India's rich heritage, vibrant culture, and breathtaking landscapes while supporting local communities and tour guides.</p>
+            
+            <h3>What We Offer</h3>
+            <ul>
+                <li>Curated tour packages across India's most beautiful destinations</li>
+                <li>Expert local guides with deep knowledge of their regions</li>
+                <li>Affordable pricing with transparent booking</li>
+                <li>24/7 customer support for all your travel needs</li>
+                <li>Authentic experiences that showcase the real India</li>
+            </ul>
+            
+            <h3>Why Choose Us</h3>
+            <p>We believe in responsible tourism that benefits both travelers and local communities. When you book with TravelIndia, you're not just getting a tour – you're supporting local guides, businesses, and sustainable travel practices.</p>
+        </section>
 
-    <section id="about" class="content-section active">
-      <h1>About Us</h1>
-      <p>TravelIndia connects travelers with verified local guides across India.</p>
-      <p>We focus on safe travel, authentic experiences, and seamless bookings.</p>
-    </section>
+        <!-- SERVICES -->
+        <section id="services" class="content-section">
+            <h1>Our Services</h1>
+            
+            <div class="service-card">
+                <i class="fas fa-map-marked-alt"></i>
+                <h3>Guided Tours</h3>
+                <p>Expertly planned tours with knowledgeable local guides who bring destinations to life with stories and insights.</p>
+            </div>
+            
+            <div class="service-card">
+                <i class="fas fa-hotel"></i>
+                <h3>Accommodation Booking</h3>
+                <p>Carefully selected hotels and stays that offer comfort, safety, and authentic local experiences.</p>
+            </div>
+            
+            <div class="service-card">
+                <i class="fas fa-utensils"></i>
+                <h3>Food & Dining</h3>
+                <p>Recommendations for the best local restaurants and cafes to experience authentic Indian cuisine.</p>
+            </div>
+            
+            <div class="service-card">
+                <i class="fas fa-calendar-check"></i>
+                <h3>Custom Itineraries</h3>
+                <p>Flexible tour packages that can be customized to match your interests, budget, and schedule.</p>
+            </div>
+            
+            <div class="service-card">
+                <i class="fas fa-headset"></i>
+                <h3>24/7 Support</h3>
+                <p>Round-the-clock customer support to assist you before, during, and after your journey.</p>
+            </div>
+        </section>
 
-    <section id="services" class="content-section">
-      <h1>Our Services</h1>
-      <ul>
-        <li>✔ Guided Tours</li>
-        <li>✔ Hotel Recommendations</li>
-        <li>✔ Destination Planning</li>
-        <li>✔ Verified Local Guides</li>
-        <li>✔ Secure Online Booking</li>
-      </ul>
-    </section>
+        <!-- PRIVACY POLICY -->
+        <section id="privacy" class="content-section">
+            <h1>Privacy Policy</h1>
+            
+            <h3>Information We Collect</h3>
+            <p>We collect information you provide when creating an account, booking tours, or contacting us. This includes your name, email, phone number, and travel preferences.</p>
+            
+            <h3>How We Use Your Information</h3>
+            <ul>
+                <li>To process your bookings and provide tour services</li>
+                <li>To communicate with you about your trips and updates</li>
+                <li>To improve our services and user experience</li>
+                <li>To send promotional offers (with your consent)</li>
+            </ul>
+            
+            <h3>Data Security</h3>
+            <p>We implement industry-standard security measures to protect your personal information. Your data is encrypted and stored securely.</p>
+            
+            <h3>Sharing Your Information</h3>
+            <p>We do not sell your personal information. We only share data with tour guides and service providers necessary to fulfill your bookings.</p>
+            
+            <h3>Your Rights</h3>
+            <p>You have the right to access, update, or delete your personal information at any time through your account settings or by contacting us.</p>
+        </section>
 
-    <section id="privacy" class="content-section">
-      <h1>Privacy Policy</h1>
-      <p>Your personal data is securely stored and never shared without consent.</p>
-      <p>All transactions are encrypted using modern security standards.</p>
-    </section>
+        <!-- FAQ -->
+        <section id="faq" class="content-section">
+            <h1>Frequently Asked Questions</h1>
+            
+            <div class="faq-item">
+                <h3>How do I book a tour?</h3>
+                <p>Simply browse our destinations, select a tour package, and fill out the booking form. You'll receive a confirmation email once your booking is processed.</p>
+            </div>
+            
+            <div class="faq-item">
+                <h3>Can I cancel or modify my booking?</h3>
+                <p>Yes, you can cancel or modify your booking by contacting our support team. Cancellation policies vary by tour package.</p>
+            </div>
+            
+            <div class="faq-item">
+                <h3>Are the tour guides certified?</h3>
+                <p>Yes, all our tour guides are experienced, knowledgeable locals who are passionate about sharing their culture and heritage.</p>
+            </div>
+            
+            <div class="faq-item">
+                <h3>What payment methods do you accept?</h3>
+                <p>We accept various payment methods including credit/debit cards, UPI, and net banking for your convenience.</p>
+            </div>
+            
+            <div class="faq-item">
+                <h3>Is travel insurance included?</h3>
+                <p>Travel insurance is not automatically included but can be added to your booking. We recommend purchasing travel insurance for all trips.</p>
+            </div>
+            
+            <div class="faq-item">
+                <h3>What if I need help during my trip?</h3>
+                <p>Our 24/7 support team is always available to assist you. You'll receive emergency contact numbers with your booking confirmation.</p>
+            </div>
+        </section>
 
-    <section id="faq" class="content-section">
-      <h1>Frequently Asked Questions</h1>
-      <div class="faq-item">
-        <strong>How do I book a tour?</strong>
-        <p>Select your destination and click "Book Tour".</p>
-      </div>
-      <div class="faq-item">
-        <strong>Can I cancel my booking?</strong>
-        <p>Yes, cancellations are allowed within 24 hours.</p>
-      </div>
-    </section>
-
-    <section id="contact" class="content-section">
-      <h1>Contact Us</h1>
-      <p><i class="fa fa-location-dot"></i> Mumbai, India</p>
-      <p><i class="fa fa-phone"></i> +91 98765 43210</p>
-      <p><i class="fa fa-envelope"></i> support@travelindia.com</p>
-      <p>We are available 24/7 for assistance.</p>
-    </section>
-
-    <a href="javascript:history.back()" class="back-btn">
-      <i class="fa fa-arrow-left"></i> Back
-    </a>
-
-  </div>
+        <!-- CONTACT -->
+        <section id="contact" class="content-section">
+            <h1>Contact Us</h1>
+            
+            <div class="contact-info">
+                <div class="contact-card">
+                    <i class="fas fa-envelope"></i>
+                    <h3>Email</h3>
+                    <p>support@travelindia.com</p>
+                </div>
+                
+                <div class="contact-card">
+                    <i class="fas fa-phone"></i>
+                    <h3>Phone</h3>
+                    <p>+91 98765 43210</p>
+                </div>
+                
+                <div class="contact-card">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <h3>Address</h3>
+                    <p>Mumbai, Maharashtra, India</p>
+                </div>
+                
+                <div class="contact-card">
+                    <i class="fas fa-clock"></i>
+                    <h3>Business Hours</h3>
+                    <p>Monday - Friday: 9AM - 6PM IST<br>Saturday: 10AM - 4PM IST<br>Sunday: Closed</p>
+                </div>
+            </div>
+            
+            <div class="back-home-wrap">
+                <a href="{{ url_for('index') }}" class="btn-primary">← Back to Home</a>
+            </div>
+        </section>
+    </div>
 </div>
+{% endblock %}
 
+{% block scripts %}
 <script>
-function showSection(e,id){
-  e.preventDefault();
-
-  document.querySelectorAll('.sidebar a').forEach(link=>{
-    link.classList.remove('active');
-  });
-
-  e.target.classList.add('active');
-
-  document.querySelectorAll('.content-section').forEach(section=>{
-    section.classList.remove('active');
-  });
-
-  document.getElementById(id).classList.add('active');
-
-  if(window.innerWidth < 768){
-    document.getElementById('sidebar').classList.remove('show');
-  }
-}
-
-function toggleMenu(){
-  document.getElementById('sidebar').classList.toggle('show');
-}
+    // Info page navigation
+    document.addEventListener('DOMContentLoaded', function() {
+        const navLinks = document.querySelectorAll('.nav-link');
+        const sections = document.querySelectorAll('.content-section');
+        
+        navLinks.forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // Remove active class from all links and sections
+                navLinks.forEach(l => l.classList.remove('active'));
+                sections.forEach(s => s.classList.remove('active'));
+                
+                // Add active class to clicked link
+                this.classList.add('active');
+                
+                // Show corresponding section
+                const sectionId = this.getAttribute('data-section');
+                const section = document.getElementById(sectionId);
+                if (section) {
+                    section.classList.add('active');
+                }
+            });
+        });
+        
+        // Handle hash navigation
+        if (window.location.hash) {
+            const hash = window.location.hash.substring(1);
+            const link = document.querySelector(`[data-section="${hash}"]`);
+            if (link) {
+                link.click();
+            }
+        }
+    });
 </script>
-
-</body>
-</html>
+{% endblock %}

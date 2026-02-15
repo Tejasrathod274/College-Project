@@ -1,0 +1,25 @@
+<nav class="navbar">
+    <div class="menu-toggle" data-menu-toggle>
+        <i class="fas fa-bars"></i>
+    </div>
+    <div class="logo">Travel<span>India</span></div>
+
+    <div class="nav-links">
+        <a href="{{ url_for('index') }}" {% if request.endpoint == 'index' %}class="active"{% endif %}>Home</a>
+        <a href="{{ url_for('index') }}#destinations">Destinations</a>
+        <a href="{{ url_for('more_places') }}" {% if request.endpoint == 'more_places' %}class="active"{% endif %}>More Places</a>
+        <a href="{{ url_for('index') }}#about">About</a>
+    </div>
+
+    <div class="nav-right">
+        <a href="{{ url_for('login') }}" class="nav-login" id="navLogin">Login</a>
+        
+        <div class="user-profile" id="userProfile" style="display: none;" data-dropdown-toggle>
+            <i class="fas fa-user-circle"></i>
+            <div class="dropdown" id="profileDropdown">
+                <a href="{{ url_for('profile') }}">My Account</a>
+                <a href="#" class="logout-trigger">Logout</a>
+            </div>
+        </div>
+    </div>
+</nav>

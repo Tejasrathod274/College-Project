@@ -45,27 +45,35 @@ function validatePhone() {
   return true;
 }
 
-// Guide profile page specific scripts
-document.addEventListener('DOMContentLoaded', function() {
-  // Handle menu button clicks
-  const menuButtons = document.querySelectorAll('.menu-btn');
+/**
+ * Guide Profile Page Tab Navigation
+ */
+function initGuideProfileTabs() {
+  const menuButtons = document.querySelectorAll('.menu-btn[data-tab]');
+  
   menuButtons.forEach(button => {
     button.addEventListener('click', function() {
-      // Remove active class from all buttons
+      // Skip if it's a logout button
+      if (this.classList.contains('logout') || this.classList.contains('logout-trigger')) {
+        return;
+      }
+      
+      // Remove active class from all buttons and cards
       menuButtons.forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
+      
       // Add active class to clicked button
       this.classList.add('active');
       
-      // Find corresponding card and show it
-      const cardId = this.getAttribute('data-card') || this.getAttribute('data-tab');
-      if (cardId) {
-        const cards = document.querySelectorAll('.card');
-        cards.forEach(card => card.classList.remove('active'));
-        const targetCard = document.getElementById(cardId);
-        if (targetCard) {
-          targetCard.classList.add('active');
-        }
+      // Show corresponding card
+      const tabId = this.getAttribute('data-tab');
+      const targetCard = document.getElementById(tabId);
+      if (targetCard) {
+        targetCard.classList.add('active');
       }
     });
   });
-});
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', initGuideProfileTabs);

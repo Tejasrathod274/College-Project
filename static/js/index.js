@@ -1,82 +1,144 @@
-// Index page specific scripts
-function revealOnScroll() {
-  var reveals = document.querySelectorAll('.reveal');
-  var windowHeight = window.innerHeight;
+/**
+ * Index Page Scripts
+ */
 
-  reveals.forEach(function(card, index) {
-    var cardTop = card.getBoundingClientRect().top;
-    var revealPoint = 50;
+// Reveal animations on scroll
+function revealOnScroll() {
+  const reveals = document.querySelectorAll('.reveal');
+  const windowHeight = window.innerHeight;
+
+  reveals.forEach((card, index) => {
+    const cardTop = card.getBoundingClientRect().top;
+    const revealPoint = 50;
 
     if (cardTop < windowHeight - revealPoint) {
-      setTimeout(function() {
+      setTimeout(() => {
         card.classList.add('active');
       }, index * 70);
     }
   });
 }
 
-window.addEventListener('scroll', revealOnScroll);
-window.addEventListener('load', revealOnScroll);
-
-// Update active nav link based on scroll position or current page
+// Update active nav link based on scroll position
 function updateActiveNavLink() {
-  var navLinks = document.querySelectorAll('.nav-links a');
-  var path = window.location.pathname;
+  const navLinks = document.querySelectorAll('.nav-links a');
+  const path = window.location.pathname;
   
   // Remove all active classes initially
-  navLinks.forEach(function(link) {
-    link.classList.remove('active');
-  });
+  navLinks.forEach(link => link.classList.remove('active'));
   
   // Set active based on current page/path
   if (path === '/' || path.indexOf('index') !== -1) {
-    navLinks[0].classList.add('active');
+    navLinks[0]?.classList.add('active');
     setupScrollNavUpdate();
   }
 }
 
 function setupScrollNavUpdate() {
-  var navLinks = document.querySelectorAll('.nav-links a');
-  var destinations = document.getElementById('destinations');
-  var about = document.getElementById('about');
+  const navLinks = document.querySelectorAll('.nav-links a');
+  const destinations = document.getElementById('destinations');
+  const about = document.getElementById('about');
   
   if (!destinations || !about) return;
   
-  window.addEventListener('scroll', function() {
-    var scrollPos = window.scrollY;
-    var destPos = destinations.offsetTop - 200;
-    var aboutPos = about.offsetTop - 200;
+  window.addEventListener('scroll', () => {
+    const scrollPos = window.scrollY;
+    const destPos = destinations.offsetTop - 200;
+    const aboutPos = about.offsetTop - 200;
     
     navLinks.forEach(l => l.classList.remove('active'));
     
     if (scrollPos >= aboutPos) {
-      navLinks[3].classList.add('active'); // About
+      navLinks[3]?.classList.add('active'); // About
     } else if (scrollPos >= destPos) {
-      navLinks[1].classList.add('active'); // Destinations
+      navLinks[1]?.classList.add('active'); // Destinations
     } else {
-      navLinks[0].classList.add('active'); // Home
+      navLinks[0]?.classList.add('active'); // Home
     }
   });
 }
 
-// About section toggle
-function toggleAbout() {
-  const aboutMore = document.querySelector('.about-more');
-  const aboutBtn = document.querySelector('.about-btn');
+// About section "Learn More" toggle
+function initAboutToggle() {
+  const btn = document.getElementById('learnMoreBtn');
+  const more = document.getElementById('aboutMore');
   
-  if (aboutMore) {
-    aboutMore.classList.toggle('about-more-open');
-    if (aboutBtn) {
-      aboutBtn.textContent = aboutMore.classList.contains('about-more-open') ? 'Read Less' : 'Read More';
-    }
+  if (btn && more) {
+    btn.addEventListener('click', () => {
+      more.classList.toggle('about-more-open');
+      btn.textContent = more.classList.contains('about-more-open') ? 'Show Less' : 'Learn More';
+    });
   }
 }
 
+// Newsletter form submission
+function initNewsletterForm() {
+  const form = document.getElementById('newsletterForm');
+  
+  if (form) {
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      
+      const email = document.getElementById('newsletterEmail').value;
+      const btn = document.getElementById('newsletterBtn');
+      const originalText = btn.textContent;
+      
+      btn.disabled = true;
+      btn.textContent = 'Subscribing...';
+      
+      fetch('/newsletter', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: 'email=' + encodeURIComponent(email)
+      })
+      .then(r => r.json())
+      .then(data => {
+        if (data.success) {
+          if (typeof showSuccessBar === 'function') {
+            showSuccessBar(data.message || 'Successfully subscribed to newsletter!');
+          } else if (typeof showToast === 'function') {
+            showToast(data.message || 'Successfully subscribed to newsletter!', 'success');
+          }
+          form.reset();
+        } else {
+          if (typeof showSuccessBar === 'function') {
+            showSuccessBar(data.message || 'Error subscribing. Please try again.', 3000);
+          } else if (typeof showToast === 'function') {
+            showToast(data.message || 'Error subscribing. Please try again.', 'error');
+          }
+        }
+        btn.textContent = originalText;
+        btn.disabled = false;
+      })
+      .catch(err => {
+        console.error('Newsletter error:', err);
+        if (typeof showSuccessBar === 'function') {
+          showSuccessBar('Error subscribing. Please try again.', 3000);
+        } else if (typeof showToast === 'function') {
+          showToast('Error subscribing. Please try again.', 'error');
+        }
+        btn.textContent = originalText;
+        btn.disabled = false;
+      });
+    });
+  }
+}
+
+// Initialize all index page functionality
+function initIndexPage() {
+  updateActiveNavLink();
+  initAboutToggle();
+  initNewsletterForm();
+  revealOnScroll();
+}
+
+// Event listeners
+window.addEventListener('scroll', revealOnScroll);
+window.addEventListener('load', revealOnScroll);
+
 // Run on page load
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', function() {
-    updateActiveNavLink();
-  });
+  document.addEventListener('DOMContentLoaded', initIndexPage);
 } else {
-  updateActiveNavLink();
+  initIndexPage();
 }
